@@ -9,6 +9,8 @@ class TextCustom extends StatelessWidget {
   final TextAlign textAlign;
   final double letterSpacing;
   final double height;
+  final int? maxLines;
+  final TextOverflow? overflow;
 
   const TextCustom(
     this.text, {
@@ -19,6 +21,8 @@ class TextCustom extends StatelessWidget {
     this.textAlign = TextAlign.left,
     this.letterSpacing = 0,
     this.height = 0,
+    this.maxLines,
+    this.overflow,
   });
 
   @override
@@ -26,6 +30,8 @@ class TextCustom extends StatelessWidget {
     return Text(
       text,
       textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
       style: TextStyle(
         fontSize: fontSize,
         fontWeight: fontWeight,
