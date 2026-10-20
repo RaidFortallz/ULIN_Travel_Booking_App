@@ -1,11 +1,11 @@
 import 'package:go_router/go_router.dart';
-import 'package:ulin/features/auth/presentation/email_verification_page.dart';
-import 'package:ulin/features/auth/presentation/login_page.dart';
-import 'package:ulin/features/auth/presentation/onboarding.dart';
-import 'package:ulin/features/auth/presentation/register_page.dart';
-import 'package:ulin/features/home/presentation/pages/home_page.dart';
-import 'package:ulin/features/profile/presentation/profile_setup_step1_page.dart';
-import 'package:ulin/features/profile/presentation/profile_setup_step2_page.dart';
+import 'package:ulin/features/auth/presentation/pages/email_verification_page.dart';
+import 'package:ulin/features/auth/presentation/pages/login_page.dart';
+import 'package:ulin/features/auth/presentation/pages/onboarding.dart';
+import 'package:ulin/features/auth/presentation/pages/register_page.dart';
+import 'package:ulin/features/main/pages/main_page.dart';
+import 'package:ulin/features/profile/presentation/pages/profile_setup_step1_page.dart';
+import 'package:ulin/features/profile/presentation/pages/profile_setup_step2_page.dart';
 import 'package:ulin/features/splash/splashscreen.dart';
 
 class RoutesApp {
@@ -50,7 +50,7 @@ class RoutesApp {
       GoRoute(
         path: '/home',
         name: 'home',
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => const MainPage(),
       ),
     ],
   );

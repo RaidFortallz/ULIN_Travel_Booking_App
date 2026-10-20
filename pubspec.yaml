@@ -52,6 +52,7 @@ dependencies:
   pinput: ^7.0.0
   material_ui: ^1.7.0
   dotted_line: ^3.3.0
+  persistent_bottom_nav_bar_v2: ^6.5.0
 
 dev_dependencies:
   flutter_test:

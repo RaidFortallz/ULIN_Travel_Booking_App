@@ -20,9 +20,11 @@ class DropdownCustom extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      
       height: height,
       width: width,
       child: DropdownButtonFormField<String>(
+        dropdownColor: WarnaApp.wrWhite,
         isExpanded: true,
         hint: Text(
           hintText,

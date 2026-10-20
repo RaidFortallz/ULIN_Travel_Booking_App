@@ -67,6 +67,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         TextfieldCustom(
                           hintText: "Email",
+                          fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           height: 38,
                           keyboardType: TextInputType.emailAddress,
@@ -87,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         TextfieldCustom(
                           hintText: "Password",
+                          fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           isPassword: true,
                           height: 38,

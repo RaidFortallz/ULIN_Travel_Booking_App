@@ -81,6 +81,7 @@ class _ProfileSetupStep1PageState extends State<ProfileSetupStep1Page> {
                         ),
                         TextfieldCustom(
                           hintText: "Jhon Doe",
+                          fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           height: 36,
                           textInputAction: TextInputAction.next,
@@ -96,6 +97,7 @@ class _ProfileSetupStep1PageState extends State<ProfileSetupStep1Page> {
                         ),
                         TextfieldCustom(
                           hintText: "I love traveling and exploring new places",
+                          fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           maxLines: 3,
                           keyboardType: TextInputType.multiline,
@@ -112,6 +114,7 @@ class _ProfileSetupStep1PageState extends State<ProfileSetupStep1Page> {
                         ),
                         TextfieldCustom(
                           hintText: "Indonesia",
+                          fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           height: 36,
                           textInputAction: TextInputAction.next,
@@ -127,6 +130,7 @@ class _ProfileSetupStep1PageState extends State<ProfileSetupStep1Page> {
                         ),
                         TextfieldCustom(
                           hintText: "mm/dd/yyyy",
+                          fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           height: 36,
                           controller: _birthdayController,
@@ -164,6 +168,7 @@ class _ProfileSetupStep1PageState extends State<ProfileSetupStep1Page> {
                         ),
                         TextfieldCustom(
                           hintText: "Business Travel",
+                          fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           height: 36,
                         ),

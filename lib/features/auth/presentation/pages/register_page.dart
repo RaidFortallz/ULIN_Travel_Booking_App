@@ -72,7 +72,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: WarnaApp.wrGreen,
                         ),
                         TextfieldCustom(
-                          hintText: "Full Name",
+                          hintText: "John Doe",
+                          fillColor: WarnaApp.wrWhite,
                           keyboardType: TextInputType.name,
                           textInputAction: TextInputAction.next,
                           width: double.infinity,
@@ -88,7 +89,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: WarnaApp.wrGreen,
                         ),
                         TextfieldCustom(
-                          hintText: "Email",
+                          hintText: "johndoe@gmail.com",
+                          fillColor: WarnaApp.wrWhite,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           width: double.infinity,
@@ -105,6 +107,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         TextfieldCustom(
                           hintText: "Password",
+                          fillColor: WarnaApp.wrWhite,
                           keyboardType: TextInputType.visiblePassword,
                           textInputAction: TextInputAction.next,
                           width: double.infinity,
@@ -128,6 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         TextfieldCustom(
                           hintText: "Confirm Password",
+                          fillColor: WarnaApp.wrWhite,
                           keyboardType: TextInputType.visiblePassword,
                           textInputAction: TextInputAction.done,
                           width: double.infinity,

@@ -10,6 +10,7 @@ class HomeSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextfieldCustom(
       hintText: "Where to go?",
+      fillColor: WarnaApp.wrWhite,
       prefix: Align(
         alignment: Alignment.centerLeft,
         widthFactor: 1,

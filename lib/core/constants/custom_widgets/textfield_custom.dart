@@ -18,6 +18,8 @@ class TextfieldCustom extends StatelessWidget {
   final bool isObscure;
   final VoidCallback? onToggle;
 
+  final Color? fillColor;
+
   const TextfieldCustom({
     super.key,
     required this.hintText,
@@ -34,6 +36,7 @@ class TextfieldCustom extends StatelessWidget {
     this.isPassword = false,
     this.isObscure = true,
     this.onToggle,
+    this.fillColor,
   });
 
   @override
@@ -53,6 +56,9 @@ class TextfieldCustom extends StatelessWidget {
       autocorrect: false,
       autofocus: false,
       decoration: InputDecoration(
+        filled: true,
+        fillColor: fillColor,
+
         hintText: hintText,
         hintStyle: TextStyle(
           fontSize: 14,
