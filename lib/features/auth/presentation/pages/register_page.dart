@@ -12,9 +12,69 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   bool _isObscurePassword = true;
-  bool _isObscureConfirm = true;
   bool _isSelected = false;
+  bool _showPasswordRules = false;
+  bool _submitted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(() => setState(() {}));
+    _emailController.addListener(() => setState(() {}));
+    _passwordController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // Validasi
+  bool get _isNameValid => _nameController.text.trim().isNotEmpty;
+
+  bool get _isEmailValid => RegExp(
+    r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+  ).hasMatch(_emailController.text.trim());
+
+  bool get _hasMinLength => _passwordController.text.length >= 8;
+
+  bool get _hasSymbol =>
+      RegExp(r'[^A-Za-z0-9\s]').hasMatch(_passwordController.text);
+
+  bool get _hasNumber => RegExp(r'[0-9]').hasMatch(_passwordController.text);
+
+  bool get _startsWithCapital =>
+      RegExp(r'^[A-Z]').hasMatch(_passwordController.text);
+
+  bool get _isPasswordValid =>
+      _hasMinLength && _hasSymbol && _hasNumber && _startsWithCapital;
+
+  bool get _showNameError => _submitted && !_isNameValid;
+
+  bool get _showEmailError =>
+      (_submitted || _emailController.text.isNotEmpty) && !_isEmailValid;
+
+  bool get _showTermsError => _submitted && !_isSelected;
+
+  void _onSignUp() {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _submitted = true;
+      _showPasswordRules = true;
+    });
+
+    if (_isNameValid && _isEmailValid && _isPasswordValid && _isSelected) {
+      context.go('/login');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +132,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: WarnaApp.wrGreen,
                         ),
                         TextfieldCustom(
+                          controller: _nameController,
                           hintText: "John Doe",
                           fillColor: WarnaApp.wrWhite,
                           keyboardType: TextInputType.name,
@@ -79,6 +140,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           width: double.infinity,
                           height: 38,
                         ),
+                        if (_showNameError) ...[
+                          SizedBox(height: 4),
+                          _ErrorText("Please enter your full name"),
+                        ],
 
                         SizedBox(height: 16),
 
@@ -89,6 +154,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: WarnaApp.wrGreen,
                         ),
                         TextfieldCustom(
+                          controller: _emailController,
                           hintText: "johndoe@gmail.com",
                           fillColor: WarnaApp.wrWhite,
                           keyboardType: TextInputType.emailAddress,
@@ -96,6 +162,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           width: double.infinity,
                           height: 38,
                         ),
+                        if (_showEmailError) ...[
+                          SizedBox(height: 4),
+                          _ErrorText(
+                            "Enter a valid email, e.g. johndoe@gmail.com",
+                          ),
+                        ],
 
                         SizedBox(height: 16),
 
@@ -106,14 +178,22 @@ class _RegisterPageState extends State<RegisterPage> {
                           color: WarnaApp.wrGreen,
                         ),
                         TextfieldCustom(
+                          controller: _passwordController,
                           hintText: "Password",
                           fillColor: WarnaApp.wrWhite,
                           keyboardType: TextInputType.visiblePassword,
-                          textInputAction: TextInputAction.next,
+                          textInputAction: TextInputAction.done,
                           width: double.infinity,
                           height: 38,
                           isPassword: true,
                           isObscure: _isObscurePassword,
+                          onTap: () {
+                            if (!_showPasswordRules) {
+                              setState(() {
+                                _showPasswordRules = true;
+                              });
+                            }
+                          },
                           onToggle: () {
                             setState(() {
                               _isObscurePassword = !_isObscurePassword;
@@ -121,29 +201,29 @@ class _RegisterPageState extends State<RegisterPage> {
                           },
                         ),
 
-                        SizedBox(height: 16),
-
-                        TextCustom(
-                          "Confirm Password",
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: WarnaApp.wrGreen,
-                        ),
-                        TextfieldCustom(
-                          hintText: "Confirm Password",
-                          fillColor: WarnaApp.wrWhite,
-                          keyboardType: TextInputType.visiblePassword,
-                          textInputAction: TextInputAction.done,
-                          width: double.infinity,
-                          height: 38,
-                          isPassword: true,
-                          isObscure: _isObscureConfirm,
-                          onToggle: () {
-                            setState(() {
-                              _isObscureConfirm = !_isObscureConfirm;
-                            });
-                          },
-                        ),
+                        if (_showPasswordRules) ...[
+                          SizedBox(height: 10),
+                          _PasswordRule(
+                            text: "At least 8 characters",
+                            isValid: _hasMinLength,
+                            showError: _submitted,
+                          ),
+                          _PasswordRule(
+                            text: "Contains a symbol (e.g. ! @ #)",
+                            isValid: _hasSymbol,
+                            showError: _submitted,
+                          ),
+                          _PasswordRule(
+                            text: "Contains a number",
+                            isValid: _hasNumber,
+                            showError: _submitted,
+                          ),
+                          _PasswordRule(
+                            text: "Starts with a capital letter",
+                            isValid: _startsWithCapital,
+                            showError: _submitted,
+                          ),
+                        ],
 
                         SizedBox(height: 16),
 
@@ -185,7 +265,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: TextCustom(
                                 "I confirm i am 18 or older and accept the Terms of Services and Privacy Policies.",
                                 fontSize: 11,
-                                color: WarnaApp.wrBlack.withValues(alpha: 0.7),
+                                color: _showTermsError
+                                    ? Colors.red
+                                    : WarnaApp.wrBlack.withValues(alpha: 0.7),
                               ),
                             ),
                           ],
@@ -194,7 +276,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         SizedBox(height: 40),
 
                         GestureDetector(
-                          onTap: () => context.go('/login'),
+                          onTap: _onSignUp,
                           child: Center(
                             child: Container(
                               width: 156,
@@ -231,6 +313,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   height: 25,
                                 ),
                               ),
+
+                              SizedBox(height: 50),
                             ],
                           ),
                         ),
@@ -242,6 +326,71 @@ class _RegisterPageState extends State<RegisterPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Teks peringatan merah dan ikon tanda seru di kiri
+class _ErrorText extends StatelessWidget {
+  final String text;
+
+  const _ErrorText(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(Icons.error_outline_rounded, size: 14, color: Colors.red),
+        SizedBox(width: 4),
+        Expanded(child: TextCustom(text, fontSize: 11, color: Colors.red)),
+      ],
+    );
+  }
+}
+
+// Aturan password:
+class _PasswordRule extends StatelessWidget {
+  final String text;
+  final bool isValid;
+  final bool showError;
+
+  const _PasswordRule({
+    required this.text,
+    required this.isValid,
+    required this.showError,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color borderColor = isValid
+        ? WarnaApp.wrGreen
+        : (showError ? Colors.red : WarnaApp.wrBlack.withValues(alpha: 0.3));
+
+    final Color textColor = isValid
+        ? WarnaApp.wrGreen
+        : (showError ? Colors.red : WarnaApp.wrBlack.withValues(alpha: 0.6));
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 18,
+            height: 18,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isValid ? WarnaApp.wrGreen : Colors.transparent,
+              border: Border.all(color: borderColor, width: 1.5),
+            ),
+            child: isValid
+                ? Icon(Icons.check, size: 12, color: WarnaApp.wrWhite)
+                : null,
+          ),
+          SizedBox(width: 8),
+          TextCustom(text, fontSize: 11, color: textColor),
+        ],
       ),
     );
   }

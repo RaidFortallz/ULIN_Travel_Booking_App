@@ -107,16 +107,17 @@ class _ProfileSetupStep1PageState extends State<ProfileSetupStep1Page> {
                         SizedBox(height: 18),
 
                         TextCustom(
-                          "Location",
+                          "Phone Number",
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
                           color: WarnaApp.wrGreen,
                         ),
                         TextfieldCustom(
-                          hintText: "Indonesia",
+                          hintText: "6200000",
                           fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           height: 36,
+                          keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.next,
                         ),
 
@@ -161,13 +162,13 @@ class _ProfileSetupStep1PageState extends State<ProfileSetupStep1Page> {
                         SizedBox(height: 18),
 
                         TextCustom(
-                          "Job Title",
+                          "Location",
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
                           color: WarnaApp.wrGreen,
                         ),
                         TextfieldCustom(
-                          hintText: "Business Travel",
+                          hintText: "Indonesia",
                           fillColor: WarnaApp.wrWhite,
                           width: double.infinity,
                           height: 36,
