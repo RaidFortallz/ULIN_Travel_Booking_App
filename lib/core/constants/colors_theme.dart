@@ -11,4 +11,5 @@ abstract class WarnaApp {
   static const Color wrGreen2 = Color(0xFF336749);
   static const Color wrGreen3 = Color(0xFF007a8c);
   static const Color wrYellow = Color(0xFFFFE900);
+  static const Color wrRed = Color(0xFFF44336);
 }
