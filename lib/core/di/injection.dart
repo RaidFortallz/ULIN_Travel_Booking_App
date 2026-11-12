@@ -4,6 +4,10 @@ import 'package:get_it/get_it.dart';
 import 'package:ulin/core/network/api_client.dart';
 import 'package:ulin/core/network/session_expired_notifier.dart';
 import 'package:ulin/core/storage/token_storage.dart';
+import 'package:ulin/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:ulin/features/auth/data/datasources/google_auth_data_source.dart';
+import 'package:ulin/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:ulin/features/auth/presentation/bloc/auth_bloc.dart';
 
 
 final GetIt getIt = GetIt.instance;
