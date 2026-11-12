@@ -1,8 +1,15 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ulin/core/constants/colors_theme.dart';
+import 'package:ulin/core/constants/custom_widgets/app_snackbar.dart';
+import 'package:ulin/core/constants/custom_widgets/button_custom.dart';
 import 'package:ulin/core/constants/custom_widgets/text_custom.dart';
 import 'package:ulin/core/constants/custom_widgets/textfield_custom.dart';
+import 'package:ulin/core/di/injection.dart';
+import 'package:ulin/core/state/request_cubit.dart';
+import 'package:ulin/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:ulin/features/auth/presentation/cubit/register_cubit.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -12,6 +19,8 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final RegisterCubit _cubit = getIt<RegisterCubit>();
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -34,6 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _cubit.close();
     super.dispose();
   }
 
@@ -72,258 +82,281 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     if (_isNameValid && _isEmailValid && _isPasswordValid && _isSelected) {
-      context.go('/login');
+      _cubit.register(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        terms: _isSelected,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => context.pop(),
-                  icon: Icon(Icons.arrow_back_ios_new_rounded),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<RegisterCubit, RequestState<Object>>(
+          bloc: _cubit,
+          listenWhen: (p, c) => p.status != c.status,
+          listener: (context, state) {
+            if (state.status == RequestStatus.success) {
+              showAppSnackBar(context, 'Account created. Please log in.');
+              context.go('/login');
+            } else if (state.status == RequestStatus.failure) {
+              showAppSnackBar(
+                context,
+                state.message ?? 'Something went wrong.',
+              );
+            }
+          },
+        ),
+        BlocListener<AuthBloc, AuthState>(
+          listenWhen: (p, c) =>
+              p.isSubmitting && !c.isSubmitting && c.errorMessage != null,
+          listener: (context, state) =>
+              showAppSnackBar(context, state.errorMessage!),
+        ),
+      ],
+      child: Scaffold(
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SafeArea(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => context.pop(),
+                    icon: Icon(Icons.arrow_back_ios_new_rounded),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Image.asset(
-                            'assets/images/ulin1.png',
-                            width: 60,
-                            height: 60,
-                          ),
-                        ),
-
-                        SizedBox(height: 30),
-
-                        TextCustom(
-                          "Create an account",
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-
-                        SizedBox(height: 10),
-
-                        TextCustom(
-                          "Sign up for a great and amazing travel experience",
-                          fontSize: 12,
-                          color: WarnaApp.wrBlack.withValues(alpha: 0.5),
-                        ),
-
-                        SizedBox(height: 18),
-
-                        TextCustom(
-                          "Full Name",
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: WarnaApp.wrGreen,
-                        ),
-                        TextfieldCustom(
-                          controller: _nameController,
-                          hintText: "John Doe",
-                          fillColor: WarnaApp.wrWhite,
-                          keyboardType: TextInputType.name,
-                          textInputAction: TextInputAction.next,
-                          width: double.infinity,
-                          height: 38,
-                        ),
-                        if (_showNameError) ...[
-                          SizedBox(height: 4),
-                          _ErrorText("Please enter your full name"),
-                        ],
-
-                        SizedBox(height: 16),
-
-                        TextCustom(
-                          "Email",
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: WarnaApp.wrGreen,
-                        ),
-                        TextfieldCustom(
-                          controller: _emailController,
-                          hintText: "johndoe@gmail.com",
-                          fillColor: WarnaApp.wrWhite,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          width: double.infinity,
-                          height: 38,
-                        ),
-                        if (_showEmailError) ...[
-                          SizedBox(height: 4),
-                          _ErrorText(
-                            "Enter a valid email, e.g. johndoe@gmail.com",
-                          ),
-                        ],
-
-                        SizedBox(height: 16),
-
-                        TextCustom(
-                          "Password",
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: WarnaApp.wrGreen,
-                        ),
-                        TextfieldCustom(
-                          controller: _passwordController,
-                          hintText: "Password",
-                          fillColor: WarnaApp.wrWhite,
-                          keyboardType: TextInputType.visiblePassword,
-                          textInputAction: TextInputAction.done,
-                          width: double.infinity,
-                          height: 38,
-                          isPassword: true,
-                          isObscure: _isObscurePassword,
-                          onTap: () {
-                            if (!_showPasswordRules) {
-                              setState(() {
-                                _showPasswordRules = true;
-                              });
-                            }
-                          },
-                          onToggle: () {
-                            setState(() {
-                              _isObscurePassword = !_isObscurePassword;
-                            });
-                          },
-                        ),
-
-                        if (_showPasswordRules) ...[
-                          SizedBox(height: 10),
-                          _PasswordRule(
-                            text: "At least 8 characters",
-                            isValid: _hasMinLength,
-                            showError: _submitted,
-                          ),
-                          _PasswordRule(
-                            text: "Contains a symbol (e.g. ! @ #)",
-                            isValid: _hasSymbol,
-                            showError: _submitted,
-                          ),
-                          _PasswordRule(
-                            text: "Contains a number",
-                            isValid: _hasNumber,
-                            showError: _submitted,
-                          ),
-                          _PasswordRule(
-                            text: "Starts with a capital letter",
-                            isValid: _startsWithCapital,
-                            showError: _submitted,
-                          ),
-                        ],
-
-                        SizedBox(height: 16),
-
-                        Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _isSelected = !_isSelected;
-                                });
-                              },
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: WarnaApp.wrGreen),
-                                ),
-                                child: _isSelected
-                                    ? Center(
-                                        child: Container(
-                                          width: 14,
-                                          height: 14,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              30,
-                                            ),
-                                            color: WarnaApp.wrGreen,
-                                          ),
-                                        ),
-                                      )
-                                    : null,
-                              ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Image.asset(
+                              'assets/images/ulin1.png',
+                              width: 60,
+                              height: 60,
                             ),
+                          ),
 
-                            SizedBox(width: 6),
+                          SizedBox(height: 30),
 
-                            Expanded(
-                              child: TextCustom(
-                                "I confirm i am 18 or older and accept the Terms of Services and Privacy Policies.",
-                                fontSize: 11,
-                                color: _showTermsError
-                                    ? Colors.red
-                                    : WarnaApp.wrBlack.withValues(alpha: 0.7),
-                              ),
+                          TextCustom(
+                            "Create an account",
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+
+                          SizedBox(height: 10),
+
+                          TextCustom(
+                            "Sign up for a great and amazing travel experience",
+                            fontSize: 12,
+                            color: WarnaApp.wrBlack.withValues(alpha: 0.5),
+                          ),
+
+                          SizedBox(height: 18),
+
+                          TextCustom(
+                            "Full Name",
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: WarnaApp.wrGreen,
+                          ),
+                          TextfieldCustom(
+                            controller: _nameController,
+                            hintText: "John Doe",
+                            fillColor: WarnaApp.wrWhite,
+                            keyboardType: TextInputType.name,
+                            textInputAction: TextInputAction.next,
+                            width: double.infinity,
+                            height: 38,
+                          ),
+                          if (_showNameError) ...[
+                            SizedBox(height: 4),
+                            _ErrorText("Please enter your full name"),
+                          ],
+
+                          SizedBox(height: 16),
+
+                          TextCustom(
+                            "Email",
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: WarnaApp.wrGreen,
+                          ),
+                          TextfieldCustom(
+                            controller: _emailController,
+                            hintText: "johndoe@gmail.com",
+                            fillColor: WarnaApp.wrWhite,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            width: double.infinity,
+                            height: 38,
+                          ),
+                          if (_showEmailError) ...[
+                            SizedBox(height: 4),
+                            _ErrorText(
+                              "Enter a valid email, e.g. johndoe@gmail.com",
                             ),
                           ],
-                        ),
 
-                        SizedBox(height: 40),
+                          SizedBox(height: 16),
 
-                        GestureDetector(
-                          onTap: _onSignUp,
-                          child: Center(
-                            child: Container(
-                              width: 156,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(30),
-                                color: WarnaApp.wrGreen,
-                              ),
-                              child: Center(
-                                child: TextCustom(
-                                  "Sign Up",
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: WarnaApp.wrWhite,
-                                ),
-                              ),
-                            ),
+                          TextCustom(
+                            "Password",
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: WarnaApp.wrGreen,
                           ),
-                        ),
+                          TextfieldCustom(
+                            controller: _passwordController,
+                            hintText: "Password",
+                            fillColor: WarnaApp.wrWhite,
+                            keyboardType: TextInputType.visiblePassword,
+                            textInputAction: TextInputAction.done,
+                            width: double.infinity,
+                            height: 38,
+                            isPassword: true,
+                            isObscure: _isObscurePassword,
+                            onTap: () {
+                              if (!_showPasswordRules) {
+                                setState(() {
+                                  _showPasswordRules = true;
+                                });
+                              }
+                            },
+                            onToggle: () {
+                              setState(() {
+                                _isObscurePassword = !_isObscurePassword;
+                              });
+                            },
+                          ),
 
-                        SizedBox(height: 20),
+                          if (_showPasswordRules) ...[
+                            SizedBox(height: 10),
+                            _PasswordRule(
+                              text: "At least 8 characters",
+                              isValid: _hasMinLength,
+                              showError: _submitted,
+                            ),
+                            _PasswordRule(
+                              text: "Contains a symbol (e.g. ! @ #)",
+                              isValid: _hasSymbol,
+                              showError: _submitted,
+                            ),
+                            _PasswordRule(
+                              text: "Contains a number",
+                              isValid: _hasNumber,
+                              showError: _submitted,
+                            ),
+                            _PasswordRule(
+                              text: "Starts with a capital letter",
+                              isValid: _startsWithCapital,
+                              showError: _submitted,
+                            ),
+                          ],
 
-                        Center(
-                          child: Column(
+                          SizedBox(height: 16),
+
+                          Row(
                             children: [
-                              TextCustom("or register with", fontSize: 14),
-
-                              SizedBox(height: 20),
-
                               GestureDetector(
-                                child: Image.asset(
-                                  'assets/images/Google.png',
-                                  width: 25,
-                                  height: 25,
+                                onTap: () {
+                                  setState(() {
+                                    _isSelected = !_isSelected;
+                                  });
+                                },
+                                child: Container(
+                                  width: 20,
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: WarnaApp.wrGreen),
+                                  ),
+                                  child: _isSelected
+                                      ? Center(
+                                          child: Container(
+                                            width: 14,
+                                            height: 14,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                              color: WarnaApp.wrGreen,
+                                            ),
+                                          ),
+                                        )
+                                      : null,
                                 ),
                               ),
 
-                              SizedBox(height: 50),
+                              SizedBox(width: 6),
+
+                              Expanded(
+                                child: TextCustom(
+                                  "I confirm i am 18 or older and accept the Terms of Services and Privacy Policies.",
+                                  fontSize: 11,
+                                  color: _showTermsError
+                                      ? Colors.red
+                                      : WarnaApp.wrBlack.withValues(alpha: 0.7),
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+
+                          SizedBox(height: 40),
+
+                          BlocBuilder<RegisterCubit, RequestState<Object>>(
+                            bloc: _cubit,
+                            builder: (context, state) {
+                              return Center(
+                                child: ButtonCustom(
+                                  label: "Sign Up",
+                                  isLoading: state.isLoading,
+                                  onTap: _onSignUp,
+                                ),
+                              );
+                            },
+                          ),
+
+                          SizedBox(height: 20),
+
+                          Center(
+                            child: Column(
+                              children: [
+                                TextCustom("or register with", fontSize: 14),
+
+                                SizedBox(height: 20),
+
+                                GestureDetector(
+                                  onTap: () => context.read<AuthBloc>().add(
+                                    const AuthGoogleSubmitted(),
+                                  ),
+                                  child: Image.asset(
+                                    'assets/images/Google.png',
+                                    width: 25,
+                                    height: 25,
+                                  ),
+                                ),
+
+                                SizedBox(height: 50),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
