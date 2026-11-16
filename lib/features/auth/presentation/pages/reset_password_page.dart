@@ -30,6 +30,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   bool _isObscure = true;
   bool _submitted = false;
   bool _resending = false;
+  bool _done = false;
 
   @override
   void initState() {
@@ -56,6 +57,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   void _submit() {
     FocusScope.of(context).unfocus();
     setState(() => _submitted = true);
+
+    if (_done) return;
 
     if (_pinController.text.length != 6) {
       showAppSnackBar(context, 'Please enter the 6-digit code.');
@@ -96,16 +99,18 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     return BlocListener<PasswordResetCubit, RequestState<Object>>(
       bloc: _cubit,
       listenWhen: (p, c) => p.status != c.status,
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state.status == RequestStatus.success) {
           if (_resending) {
             _resending = false;
-            showAppSnackBar(
+            showAppSuccessSnackbar(
               context,
               'A new code has been sent if the email is registered.',
             );
           } else {
-            showAppSnackBar(context, 'Password updated. Please log in.');
+            _done = true;
+            await showAppSuccessSnackbar(context, 'Password updated. Please log in.');
+            if (!context.mounted) return;
             context.go('/login');
           }
         } else if (state.status == RequestStatus.failure) {

@@ -98,9 +98,13 @@ class _RegisterPageState extends State<RegisterPage> {
         BlocListener<RegisterCubit, RequestState<Object>>(
           bloc: _cubit,
           listenWhen: (p, c) => p.status != c.status,
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state.status == RequestStatus.success) {
-              showAppSnackBar(context, 'Account created. Please log in.');
+              await showAppSuccessSnackbar(
+                context,
+                'Account created. Please log in.',
+              );
+              if (!context.mounted) return;
               context.go('/login');
             } else if (state.status == RequestStatus.failure) {
               showAppSnackBar(
@@ -115,6 +119,17 @@ class _RegisterPageState extends State<RegisterPage> {
               p.isSubmitting && !c.isSubmitting && c.errorMessage != null,
           listener: (context, state) =>
               showAppSnackBar(context, state.errorMessage!),
+        ),
+        BlocListener<AuthBloc, AuthState>(
+          listenWhen: (p, c) => p.pendingUser == null && c.pendingUser != null,
+          listener: (context, state) async {
+            final bloc = context.read<AuthBloc>();
+            await showAppSuccessSnackbar(
+              context,
+              'Welcome, ${state.pendingUser!.displayName}!',
+            );
+            bloc.add(const AuthLoginConfirmed());
+          },
         ),
       ],
       child: Scaffold(
@@ -319,7 +334,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               return Center(
                                 child: ButtonCustom(
                                   label: "Sign Up",
-                                  isLoading: state.isLoading,
+                                  isLoading: state.isLoading || state.status == RequestStatus.success,
                                   onTap: _onSignUp,
                                 ),
                               );

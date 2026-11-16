@@ -50,11 +50,26 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listenWhen: (p, c) =>
-          p.isSubmitting && !c.isSubmitting && c.errorMessage != null,
-      listener: (context, state) =>
-          showAppSnackBar(context, state.errorMessage!),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AuthBloc, AuthState>(
+          listenWhen: (p, c) =>
+              p.isSubmitting && !c.isSubmitting && c.errorMessage != null,
+          listener: (context, state) =>
+              showAppSnackBar(context, state.errorMessage!),
+        ),
+        BlocListener<AuthBloc, AuthState>(
+          listenWhen: (p, c) => p.pendingUser == null && c.pendingUser != null,
+          listener: (context, state) async {
+            final bloc = context.read<AuthBloc>();
+            await showAppSuccessSnackbar(
+              context,
+              'Welcome back, ${state.pendingUser!.displayName}!',
+            );
+            bloc.add(const AuthLoginConfirmed());
+          },
+        ),
+      ],
       child: Scaffold(
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -212,7 +227,7 @@ class _LoginPageState extends State<LoginPage> {
                               return Center(
                                 child: ButtonCustom(
                                   label: "Login",
-                                  isLoading: state.isSubmitting,
+                                  isLoading: state.isSubmitting || state.pendingUser != null,
                                   onTap: _submit,
                                 ),
                               );

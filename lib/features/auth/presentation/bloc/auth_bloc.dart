@@ -48,6 +48,10 @@ class AuthLogoutRequested extends AuthEvent {
   const AuthLogoutRequested();
 }
 
+class AuthLoginConfirmed extends AuthEvent {
+  const AuthLoginConfirmed();
+}
+
 class AuthUserUpdated extends AuthEvent {
   final AppUser user;
 
@@ -64,12 +68,14 @@ class AuthSessionExpired extends AuthEvent {
 class AuthState extends Equatable {
   final AuthStatus status;
   final AppUser? user;
+  final AppUser? pendingUser;
   final bool isSubmitting;
   final String? errorMessage;
 
   const AuthState({
     this.status = AuthStatus.unknown,
     this.user,
+    this.pendingUser,
     this.isSubmitting = false,
     this.errorMessage,
   });
@@ -78,6 +84,8 @@ class AuthState extends Equatable {
     AuthStatus? status,
     AppUser? user,
     bool clearUser = false,
+    AppUser? pendingUser,
+    bool clearPending = false,
     bool? isSubmitting,
     String? errorMessage,
     bool clearError = false,
@@ -85,13 +93,20 @@ class AuthState extends Equatable {
     return AuthState(
       status: status ?? this.status,
       user: clearUser ? null : (user ?? this.user),
+      pendingUser: clearPending ? null : (pendingUser ?? this.pendingUser),
       isSubmitting: isSubmitting ?? this.isSubmitting,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 
   @override
-  List<Object?> get props => [status, user, isSubmitting, errorMessage];
+  List<Object?> get props => [
+    status,
+    user,
+    pendingUser,
+    isSubmitting,
+    errorMessage,
+  ];
 }
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -106,6 +121,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthUserUpdated>(_onUserUpdated);
     on<AuthSessionExpired>(_onSessionExpired);
+    on<AuthLoginConfirmed>(_onLoginConfirmed);
 
     _expiredSubcription = notifier.stream.listen(
       (_) => add(const AuthSessionExpired()),
@@ -144,6 +160,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLoginSubmitted event,
     Emitter<AuthState> emit,
   ) async {
+    if (state.isSubmitting || state.pendingUser != null) return;
+
     emit(state.copyWith(isSubmitting: true, clearError: true));
 
     try {
@@ -152,13 +170,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         remember: event.remember,
       );
-      emit(
-        state.copyWith(
-          status: AuthStatus.authenticated,
-          user: user,
-          isSubmitting: false,
-        ),
-      );
+      emit(state.copyWith(isSubmitting: false, pendingUser: user));
     } on Failure catch (f) {
       emit(state.copyWith(isSubmitting: false, errorMessage: f.message));
     }
@@ -168,17 +180,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthGoogleSubmitted event,
     Emitter<AuthState> emit,
   ) async {
+    if (state.isSubmitting || state.pendingUser != null) return;
+
     emit(state.copyWith(isSubmitting: true, clearError: true));
 
     try {
       final user = await _repository.loginWithGoogle(remember: event.remember);
-      emit(
-        state.copyWith(
-          status: AuthStatus.authenticated,
-          user: user,
-          isSubmitting: false,
-        ),
-      );
+      emit(state.copyWith(isSubmitting: false, pendingUser: user));
     } on Failure catch (f) {
       if (f.code == 'cancelled') {
         emit(state.copyWith(isSubmitting: false));
@@ -186,6 +194,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(state.copyWith(isSubmitting: false, errorMessage: f.message));
       }
     }
+  }
+
+  void _onLoginConfirmed(AuthLoginConfirmed event, Emitter<AuthState> emit) {
+    final user = state.pendingUser;
+    if (user == null) return;
+
+    emit(
+      state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+        clearPending: true,
+      ),
+    );
   }
 
   Future<void> _onLogoutRequested(
@@ -198,6 +219,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         status: AuthStatus.unauthenticated,
         clearUser: true,
         clearError: true,
+        clearPending: true,
       ),
     );
   }
