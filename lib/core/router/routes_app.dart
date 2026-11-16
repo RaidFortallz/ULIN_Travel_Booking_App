@@ -1,9 +1,12 @@
 import 'package:go_router/go_router.dart';
 import 'package:ulin/core/router/go_router_refresh_stream.dart';
+import 'package:ulin/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:ulin/features/auth/presentation/pages/email_verification_page.dart';
+import 'package:ulin/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:ulin/features/auth/presentation/pages/login_page.dart';
 import 'package:ulin/features/auth/presentation/pages/onboarding.dart';
 import 'package:ulin/features/auth/presentation/pages/register_page.dart';
+import 'package:ulin/features/auth/presentation/pages/reset_password_page.dart';
 import 'package:ulin/features/main/pages/main_page.dart';
 import 'package:ulin/features/profile/presentation/pages/profile_setup_step1_page.dart';
 import 'package:ulin/features/profile/presentation/pages/profile_setup_step2_page.dart';

@@ -1,13 +1,19 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ulin/core/constants/colors_theme.dart';
 import 'package:ulin/core/constants/custom_widgets/text_custom.dart';
+import 'package:ulin/features/auth/presentation/bloc/auth_bloc.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = context.select((AuthBloc bloc) => bloc.state.user);
+    final avatarUrl = user?.avatarUrl;
+
     return Row(
       children: [
         Container(
@@ -17,14 +23,21 @@ class HomeHeader extends StatelessWidget {
             shape: BoxShape.circle,
             color: WarnaApp.wrGreen,
           ),
-          child: Icon(Icons.person, color: WarnaApp.wrWhite),
+          child: avatarUrl != null
+              ? ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: avatarUrl,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              : Icon(Icons.person, color: WarnaApp.wrWhite),
         ),
 
         SizedBox(width: 10),
 
-        TextCustom("Hi, Frutang", fontSize: 18),
+        Expanded(child: TextCustom("Hi, ${user?.displayName ?? ''}", fontSize: 18, maxLines: 1, overflow: TextOverflow.ellipsis,)),
 
-        SizedBox(width: 80),
+        SizedBox(width: 10),
 
         Container(
           width: 38.w,
